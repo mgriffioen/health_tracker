@@ -1,3 +1,3 @@
 # Health Tracker
 
-A tracker to keep my food and weight
+Food and weight tracker with a dashboard
