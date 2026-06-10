@@ -1,27 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Scale, Trash2, TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import { getWeightEntries, saveWeightEntry, deleteWeightEntry } from '../utils/storage';
+import { fetchWeightEntries, upsertWeightEntry, removeWeightEntry } from '../utils/db';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function WeightTracker() {
-  const [entries, setEntries] = useState(getWeightEntries);
+export default function WeightTracker({ session }) {
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
   const [date, setDate] = useState(today());
   const [weight, setWeight] = useState('');
   const [unit, setUnit] = useState('lbs');
 
-  function handleSubmit(e) {
+  useEffect(() => {
+    fetchWeightEntries()
+      .then(setEntries)
+      .catch(console.error)
+      .finally(() => setLoadingEntries(false));
+  }, []);
+
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!weight) return;
-    const updated = saveWeightEntry({ date, weight: Number(weight), unit });
-    setEntries(updated);
-    setWeight('');
+    try {
+      const saved = await upsertWeightEntry({ date, weight: Number(weight), unit }, session.user.id);
+      setEntries(prev => {
+        const filtered = prev.filter(e => e.date !== date);
+        return [...filtered, saved].sort((a, b) => a.date.localeCompare(b.date));
+      });
+      setWeight('');
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  function handleDelete(id) {
-    setEntries(deleteWeightEntry(id));
+  async function handleDelete(id) {
+    try {
+      await removeWeightEntry(id);
+      setEntries(prev => prev.filter(e => e.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
@@ -30,13 +50,11 @@ export default function WeightTracker() {
     const curr = sorted[i];
     const prev = sorted[i + 1];
     if (!prev || curr.unit !== prev.unit) return null;
-    const diff = curr.weight - prev.weight;
-    return diff;
+    return curr.weight - prev.weight;
   }
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      {/* Form */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Scale size={20} className="text-blue-500" />
@@ -67,9 +85,7 @@ export default function WeightTracker() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">
-              Weight ({unit})
-            </label>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Weight ({unit})</label>
             <input
               type="number"
               step="0.1"
@@ -91,10 +107,13 @@ export default function WeightTracker() {
         </form>
       </div>
 
-      {/* Log */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">Weight History</h2>
-        {sorted.length === 0 ? (
+        {loadingEntries ? (
+          <div className="flex justify-center py-8">
+            <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : sorted.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-6">No entries yet. Log your first weight above.</p>
         ) : (
           <div className="space-y-2">

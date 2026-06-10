@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from 'recharts';
-import { getFoodEntries, getWeightEntries } from '../utils/storage';
+import { fetchFoodEntries, fetchWeightEntries } from '../utils/db';
 import { TrendingDown, Flame, Scale, Calendar } from 'lucide-react';
 
 function shortDate(dateStr) {
@@ -17,14 +17,19 @@ function avgWeight(entries) {
 }
 
 export default function Dashboard() {
-  const foodEntries = getFoodEntries();
-  const weightEntries = getWeightEntries();
+  const [foodEntries, setFoodEntries] = useState([]);
+  const [weightEntries, setWeightEntries] = useState([]);
+
+  useEffect(() => {
+    fetchFoodEntries().then(setFoodEntries).catch(console.error);
+    fetchWeightEntries().then(setWeightEntries).catch(console.error);
+  }, []);
 
   const weightData = useMemo(() => {
     return [...weightEntries]
       .sort((a, b) => a.date.localeCompare(b.date))
       .map(e => ({ date: e.date, label: shortDate(e.date), weight: e.weight, unit: e.unit }));
-  }, [weightEntries.length]);
+  }, [weightEntries]);
 
   const calorieData = useMemo(() => {
     const byDay = {};
@@ -35,7 +40,7 @@ export default function Dashboard() {
     return Object.entries(byDay)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, calories]) => ({ date, label: shortDate(date), calories }));
-  }, [foodEntries.length]);
+  }, [foodEntries]);
 
   const latestWeight = weightData.at(-1);
   const firstWeight = weightData[0];
@@ -55,7 +60,6 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
-      {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard
           icon={<Scale size={18} className="text-blue-500" />}
@@ -84,7 +88,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Weight chart */}
       <ChartCard title="Weight Over Time" empty={weightData.length < 2}>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={weightData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -122,7 +125,6 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* Calorie chart */}
       <ChartCard title="Daily Calorie Intake" empty={calorieData.length === 0}>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={calorieData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
@@ -152,7 +154,6 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* Calorie log table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <h3 className="text-base font-semibold text-slate-800 mb-3">Calorie Log</h3>
         {calorieData.length === 0 ? (

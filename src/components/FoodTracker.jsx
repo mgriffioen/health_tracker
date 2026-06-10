@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Clock } from 'lucide-react';
-import { getFoodEntries, saveFoodEntry, deleteFoodEntry } from '../utils/storage';
 import { searchFoods, FOOD_GROUPS } from '../utils/foodApi';
 import { searchLocal } from '../utils/foodDatabase';
+import { fetchFoodEntries, insertFoodEntry, removeFoodEntry } from '../utils/db';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -21,8 +21,9 @@ const EMPTY_FORM = {
   foodGroup: 'Other',
 };
 
-export default function FoodTracker() {
-  const [entries, setEntries] = useState(getFoodEntries);
+export default function FoodTracker({ session }) {
+  const [entries, setEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
   const [form, setForm] = useState(EMPTY_FORM);
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -33,15 +34,15 @@ export default function FoodTracker() {
   const debounceRef = useRef(null);
   const suggestRef = useRef(null);
 
+  useEffect(() => {
+    fetchFoodEntries()
+      .then(setEntries)
+      .catch(console.error)
+      .finally(() => setLoadingEntries(false));
+  }, []);
+
   const search = useCallback(async (q) => {
     if (q.length < 2) { setSuggestions([]); setLoading(false); return; }
-    // Show local results instantly
-    const local = searchLocal(q);
-    if (local.length) {
-      setSuggestions(local);
-      setShowSuggestions(true);
-    }
-    // Then fetch API results in background
     setLoading(true);
     const results = await searchFoods(q);
     setSuggestions(results);
@@ -51,13 +52,8 @@ export default function FoodTracker() {
 
   useEffect(() => {
     if (query.length < 2) { setSuggestions([]); return; }
-    // Show local matches immediately (no delay)
     const local = searchLocal(query);
-    if (local.length) {
-      setSuggestions(local);
-      setShowSuggestions(true);
-    }
-    // Debounce the API call
+    if (local.length) { setSuggestions(local); setShowSuggestions(true); }
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => search(query), 500);
     return () => clearTimeout(debounceRef.current);
@@ -80,12 +76,7 @@ export default function FoodTracker() {
     const cals = food.caloriesPer100g
       ? Math.round((food.caloriesPer100g * form.servingSize) / 100)
       : '';
-    setForm(f => ({
-      ...f,
-      name: food.name,
-      calories: cals,
-      foodGroup: food.category || 'Other',
-    }));
+    setForm(f => ({ ...f, name: food.name, calories: cals, foodGroup: food.category || 'Other' }));
   }
 
   function handleServingChange(size) {
@@ -99,23 +90,31 @@ export default function FoodTracker() {
     }));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!form.name || !form.calories) return;
-    const updated = saveFoodEntry(form);
-    setEntries(updated);
-    setForm({ ...EMPTY_FORM, date: form.date });
-    setQuery('');
-    setSelectedFood(null);
+    try {
+      const saved = await insertFoodEntry(form, session.user.id);
+      setEntries(prev => [saved, ...prev]);
+      setForm({ ...EMPTY_FORM, date: form.date });
+      setQuery('');
+      setSelectedFood(null);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  function handleDelete(id) {
-    setEntries(deleteFoodEntry(id));
+  async function handleDelete(id) {
+    try {
+      await removeFoodEntry(id);
+      setEntries(prev => prev.filter(e => e.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   const filtered = entries.filter(e => e.date === filterDate);
   const totalCals = filtered.reduce((sum, e) => sum + Number(e.calories || 0), 0);
-
   const grouped = filtered.reduce((acc, e) => {
     const g = e.foodGroup || 'Other';
     if (!acc[g]) acc[g] = [];
@@ -125,11 +124,9 @@ export default function FoodTracker() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      {/* Add Food Form */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">Log Food</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Food search */}
           <div className="relative" ref={suggestRef}>
             <label className="block text-sm font-medium text-slate-600 mb-1">Food Item</label>
             <div className="relative">
@@ -168,7 +165,6 @@ export default function FoodTracker() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Serving size */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Serving (g)</label>
               <input
@@ -179,7 +175,6 @@ export default function FoodTracker() {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
-            {/* Calories */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Calories (kcal)</label>
               <input
@@ -194,7 +189,6 @@ export default function FoodTracker() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Food group */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Food Group</label>
               <select
@@ -205,7 +199,6 @@ export default function FoodTracker() {
                 {FOOD_GROUPS.map(g => <option key={g}>{g}</option>)}
               </select>
             </div>
-            {/* Time */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Time</label>
               <div className="relative">
@@ -240,7 +233,6 @@ export default function FoodTracker() {
         </form>
       </div>
 
-      {/* Day filter + log */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -255,7 +247,11 @@ export default function FoodTracker() {
           />
         </div>
 
-        {filtered.length === 0 ? (
+        {loadingEntries ? (
+          <div className="flex justify-center py-8">
+            <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-6">No entries for this day.</p>
         ) : (
           <div className="space-y-4">
