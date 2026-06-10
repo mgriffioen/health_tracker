@@ -164,7 +164,7 @@ export default function FoodTracker({ session }) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Serving (g)</label>
               <input
@@ -188,7 +188,7 @@ export default function FoodTracker({ session }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Food Group</label>
               <select
