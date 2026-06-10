@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Clock } from 'lucide-react';
 import { getFoodEntries, saveFoodEntry, deleteFoodEntry } from '../utils/storage';
 import { searchFoods, FOOD_GROUPS } from '../utils/foodApi';
+import { searchLocal } from '../utils/foodDatabase';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -33,7 +34,7 @@ export default function FoodTracker() {
   const suggestRef = useRef(null);
 
   const search = useCallback(async (q) => {
-    if (q.length < 2) { setSuggestions([]); return; }
+    if (q.length < 2) { setSuggestions([]); setLoading(false); return; }
     setLoading(true);
     const results = await searchFoods(q);
     setSuggestions(results);
@@ -42,8 +43,16 @@ export default function FoodTracker() {
   }, []);
 
   useEffect(() => {
+    if (query.length < 2) { setSuggestions([]); return; }
+    // Show local matches immediately (no delay)
+    const local = searchLocal(query);
+    if (local.length) {
+      setSuggestions(local);
+      setShowSuggestions(true);
+    }
+    // Debounce the API call
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(query), 400);
+    debounceRef.current = setTimeout(() => search(query), 500);
     return () => clearTimeout(debounceRef.current);
   }, [query, search]);
 
@@ -109,11 +118,9 @@ export default function FoodTracker() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      {/* Add Food Form */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">Log Food</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Food search */}
           <div className="relative" ref={suggestRef}>
             <label className="block text-sm font-medium text-slate-600 mb-1">Food Item</label>
             <div className="relative">
@@ -138,7 +145,10 @@ export default function FoodTracker() {
                     onMouseDown={() => selectSuggestion(s)}
                     className="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm"
                   >
-                    <div className="font-medium text-slate-800">{s.name}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-slate-800">{s.name}</span>
+                      {s.source === 'local' && <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1 rounded">common</span>}
+                    </div>
                     <div className="text-slate-400 text-xs">
                       {s.brand && `${s.brand} · `}{s.caloriesPer100g} kcal/100g · {s.category}
                     </div>
@@ -149,7 +159,6 @@ export default function FoodTracker() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Serving size */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Serving (g)</label>
               <input
@@ -160,7 +169,6 @@ export default function FoodTracker() {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
-            {/* Calories */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Calories (kcal)</label>
               <input
@@ -175,7 +183,6 @@ export default function FoodTracker() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Food group */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Food Group</label>
               <select
@@ -186,7 +193,6 @@ export default function FoodTracker() {
                 {FOOD_GROUPS.map(g => <option key={g}>{g}</option>)}
               </select>
             </div>
-            {/* Time */}
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Time</label>
               <div className="relative">
@@ -221,7 +227,6 @@ export default function FoodTracker() {
         </form>
       </div>
 
-      {/* Day filter + log */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
