@@ -164,6 +164,28 @@ export default function FoodTracker({ session }) {
             )}
           </div>
 
+          {selectedFood?.servings?.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Quick Serving</label>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedFood.servings.map(s => (
+                  <button
+                    key={s.label}
+                    type="button"
+                    onClick={() => handleServingChange(s.g)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                      form.servingSize === s.g
+                        ? 'bg-emerald-500 text-white border-emerald-500'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400'
+                    }`}
+                  >
+                    {s.label} <span className="opacity-60">({s.g}g)</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Serving (g)</label>
