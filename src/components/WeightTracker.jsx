@@ -61,7 +61,7 @@ export default function WeightTracker({ session }) {
           <h2 className="text-lg font-semibold text-slate-800">Log Weight</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
               <input
