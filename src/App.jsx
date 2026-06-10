@@ -14,7 +14,7 @@ const TABS = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('food');
-  const [session, setSession] = useState(undefined); // undefined = loading
+  const [session, setSession] = useState(undefined);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));

@@ -57,7 +57,6 @@ export async function fetchWeightEntries() {
 }
 
 export async function upsertWeightEntry(entry, userId) {
-  // Check if an entry exists for this date
   const { data: existing } = await supabase
     .from('weight_entries')
     .select('id')

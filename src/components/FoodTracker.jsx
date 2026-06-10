@@ -73,10 +73,11 @@ export default function FoodTracker({ session }) {
     setSelectedFood(food);
     setQuery(food.name);
     setShowSuggestions(false);
+    const defaultServing = food.servings?.[0]?.g ?? 100;
     const cals = food.caloriesPer100g
-      ? Math.round((food.caloriesPer100g * form.servingSize) / 100)
+      ? Math.round((food.caloriesPer100g * defaultServing) / 100)
       : '';
-    setForm(f => ({ ...f, name: food.name, calories: cals, foodGroup: food.category || 'Other' }));
+    setForm(f => ({ ...f, name: food.name, calories: cals, servingSize: defaultServing, foodGroup: food.category || 'Other' }));
   }
 
   function handleServingChange(size) {

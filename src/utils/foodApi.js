@@ -39,8 +39,7 @@ export async function searchFoods(query) {
 
   // Return local results immediately if we have enough
   if (local.length >= 4) {
-    // Still fetch API in background to append branded results
-    apiPromise.then(() => {}); // fire and forget
+    apiPromise.then(() => {});
     return local;
   }
 
