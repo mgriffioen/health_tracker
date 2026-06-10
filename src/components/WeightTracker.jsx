@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Scale, Trash2, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import { fetchWeightEntries, upsertWeightEntry, removeWeightEntry } from '../utils/db';
 
+const UNIT = 'lbs';
+
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -11,7 +13,6 @@ export default function WeightTracker({ session }) {
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [date, setDate] = useState(today());
   const [weight, setWeight] = useState('');
-  const [unit, setUnit] = useState('lbs');
 
   useEffect(() => {
     fetchWeightEntries()
@@ -24,7 +25,7 @@ export default function WeightTracker({ session }) {
     e.preventDefault();
     if (!weight) return;
     try {
-      const saved = await upsertWeightEntry({ date, weight: Number(weight), unit }, session.user.id);
+      const saved = await upsertWeightEntry({ date, weight: Number(weight), unit: UNIT }, session.user.id);
       setEntries(prev => {
         const filtered = prev.filter(e => e.date !== date);
         return [...filtered, saved].sort((a, b) => a.date.localeCompare(b.date));
@@ -49,7 +50,7 @@ export default function WeightTracker({ session }) {
   function getTrend(i) {
     const curr = sorted[i];
     const prev = sorted[i + 1];
-    if (!prev || curr.unit !== prev.unit) return null;
+    if (!prev) return null;
     return curr.weight - prev.weight;
   }
 
@@ -61,38 +62,25 @@ export default function WeightTracker({ session }) {
           <h2 className="text-lg font-semibold text-slate-800">Log Weight</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Unit</label>
-              <select
-                value={unit}
-                onChange={e => setUnit(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="lbs">lbs</option>
-                <option value="kg">kg</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Weight ({unit})</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Weight (lbs)</label>
             <input
               type="number"
               step="0.1"
               min="0"
               value={weight}
               onChange={e => setWeight(e.target.value)}
-              placeholder={`Enter weight in ${unit}`}
+              placeholder="Enter weight in lbs"
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -123,7 +111,7 @@ export default function WeightTracker({ session }) {
                 <div key={entry.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
                   <div className="flex-1">
                     <div className="font-semibold text-slate-800">
-                      {entry.weight} <span className="text-sm font-normal text-slate-500">{entry.unit}</span>
+                      {entry.weight} <span className="text-sm font-normal text-slate-500">lbs</span>
                     </div>
                     <div className="text-xs text-slate-400 mt-0.5">
                       {new Date(entry.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
