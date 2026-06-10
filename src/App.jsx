@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { Utensils, Scale, LayoutDashboard } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Utensils, Scale, LayoutDashboard, LogOut } from 'lucide-react';
 import FoodTracker from './components/FoodTracker';
 import WeightTracker from './components/WeightTracker';
 import Dashboard from './components/Dashboard';
+import Auth from './components/Auth';
+import { supabase } from './utils/supabase';
 
 const TABS = [
   { id: 'food', label: 'Food Tracker', icon: Utensils },
@@ -12,6 +14,25 @@ const TABS = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('food');
+  const [session, setSession] = useState(undefined);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!session) return <Auth />;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -19,6 +40,13 @@ export default function App() {
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex items-center h-14">
             <span className="font-bold text-slate-800 text-base mr-auto">Health Tracker</span>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-sm transition-colors"
+            >
+              <LogOut size={15} />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
           </div>
           <nav className="flex gap-1 -mb-px overflow-x-auto">
             {TABS.map(({ id, label, icon: Icon }) => (
@@ -41,8 +69,8 @@ export default function App() {
       </header>
 
       <main className="flex-1 py-4">
-        {activeTab === 'food' && <FoodTracker />}
-        {activeTab === 'weight' && <WeightTracker />}
+        {activeTab === 'food' && <FoodTracker session={session} />}
+        {activeTab === 'weight' && <WeightTracker session={session} />}
         {activeTab === 'dashboard' && <Dashboard />}
       </main>
     </div>
