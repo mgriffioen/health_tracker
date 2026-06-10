@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Clock } from 'lucide-react';
 import { getFoodEntries, saveFoodEntry, deleteFoodEntry } from '../utils/storage';
 import { searchFoods, FOOD_GROUPS } from '../utils/foodApi';
+import { searchLocal } from '../utils/foodDatabase';
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -33,7 +34,14 @@ export default function FoodTracker() {
   const suggestRef = useRef(null);
 
   const search = useCallback(async (q) => {
-    if (q.length < 2) { setSuggestions([]); return; }
+    if (q.length < 2) { setSuggestions([]); setLoading(false); return; }
+    // Show local results instantly
+    const local = searchLocal(q);
+    if (local.length) {
+      setSuggestions(local);
+      setShowSuggestions(true);
+    }
+    // Then fetch API results in background
     setLoading(true);
     const results = await searchFoods(q);
     setSuggestions(results);
@@ -42,8 +50,16 @@ export default function FoodTracker() {
   }, []);
 
   useEffect(() => {
+    if (query.length < 2) { setSuggestions([]); return; }
+    // Show local matches immediately (no delay)
+    const local = searchLocal(query);
+    if (local.length) {
+      setSuggestions(local);
+      setShowSuggestions(true);
+    }
+    // Debounce the API call
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(query), 400);
+    debounceRef.current = setTimeout(() => search(query), 500);
     return () => clearTimeout(debounceRef.current);
   }, [query, search]);
 
@@ -138,7 +154,10 @@ export default function FoodTracker() {
                     onMouseDown={() => selectSuggestion(s)}
                     className="px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm"
                   >
-                    <div className="font-medium text-slate-800">{s.name}</div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-slate-800">{s.name}</span>
+                      {s.source === 'local' && <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1 rounded">common</span>}
+                    </div>
                     <div className="text-slate-400 text-xs">
                       {s.brand && `${s.brand} · `}{s.caloriesPer100g} kcal/100g · {s.category}
                     </div>

@@ -1,18 +1,18 @@
-// Open Food Facts API - free, no key required
+import { searchLocal } from './foodDatabase';
+
 const BASE = 'https://world.openfoodfacts.org';
 
-export async function searchFoods(query) {
-  if (!query || query.length < 2) return [];
+async function searchOpenFoodFacts(query) {
   try {
     const params = new URLSearchParams({
       search_terms: query,
       search_simple: 1,
       action: 'process',
       json: 1,
-      page_size: 10,
+      page_size: 6,
       fields: 'product_name,nutriments,categories_tags,brands',
     });
-    const res = await fetch(`${BASE}/cgi/search.pl?${params}`);
+    const res = await fetch(`${BASE}/cgi/search.pl?${params}`, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) return [];
     const data = await res.json();
     return (data.products || [])
@@ -22,10 +22,39 @@ export async function searchFoods(query) {
         brand: p.brands || '',
         caloriesPer100g: Math.round(p.nutriments['energy-kcal_100g']),
         category: mapCategory(p.categories_tags),
+        source: 'api',
       }));
   } catch {
     return [];
   }
+}
+
+export async function searchFoods(query) {
+  if (!query || query.length < 2) return [];
+
+  const local = searchLocal(query);
+
+  // Fire API search in parallel but don't block on it
+  const apiPromise = searchOpenFoodFacts(query);
+
+  // Return local results immediately if we have enough
+  if (local.length >= 4) {
+    // Still fetch API in background to append branded results
+    apiPromise.then(() => {}); // fire and forget
+    return local;
+  }
+
+  // Otherwise wait for API to fill the gap
+  const api = await apiPromise;
+
+  // Deduplicate: skip API results whose name closely matches a local one
+  const localNames = new Set(local.map(f => f.name.toLowerCase()));
+  const filtered = api.filter(f => {
+    const n = f.name.toLowerCase();
+    return ![...localNames].some(l => n.includes(l) || l.includes(n));
+  });
+
+  return [...local, ...filtered].slice(0, 10);
 }
 
 function mapCategory(tags = []) {
