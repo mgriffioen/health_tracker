@@ -52,7 +52,7 @@ export default function Dashboard() {
     ? Math.round(calorieData.reduce((s, d) => s + d.calories, 0) / calorieData.length)
     : null;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
   const todayCals = calorieData.find(d => d.date === todayStr)?.calories ?? null;
 
   const weightUnit = latestWeight?.unit || 'lbs';
@@ -94,7 +94,7 @@ export default function Dashboard() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
             <YAxis
-              domain={['auto', 'auto']}
+              domain={[dataMin => Math.min(190, dataMin), 'auto']}
               tick={{ fontSize: 11, fill: '#94a3b8' }}
               tickLine={false}
               axisLine={false}
