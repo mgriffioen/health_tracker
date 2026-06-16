@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { fetchFoodEntries, fetchWeightEntries } from '../utils/db';
 import { TrendingDown, Flame, Scale, Calendar } from 'lucide-react';
@@ -89,14 +89,6 @@ export default function Dashboard() {
               unit={` ${weightUnit}`}
               width={55}
             />
-            {avgW && (
-              <ReferenceLine
-                y={avgW}
-                stroke="#94a3b8"
-                strokeDasharray="4 4"
-                label={{ value: 'avg', position: 'right', fontSize: 10, fill: '#94a3b8' }}
-              />
-            )}
             <Tooltip
               contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
               formatter={v => [`${v} ${weightUnit}`, 'Weight']}
@@ -140,14 +132,6 @@ export default function Dashboard() {
               unit=" kcal"
               width={65}
             />
-            {avgCals && (
-              <ReferenceLine
-                y={avgCals}
-                stroke="#94a3b8"
-                strokeDasharray="4 4"
-                label={{ value: 'avg', position: 'right', fontSize: 10, fill: '#94a3b8' }}
-              />
-            )}
             <Tooltip
               contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
               formatter={v => [`${v} kcal`, 'Calories']}
