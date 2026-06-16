@@ -63,27 +63,28 @@ export default function WeightTracker({ session }) {
           <h2 className="text-lg font-semibold text-slate-800">Log Weight</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Weight (lbs)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={weight}
-              onChange={e => setWeight(e.target.value)}
-              placeholder="Enter weight in lbs"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Weight (lbs)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={weight}
+                onChange={e => setWeight(e.target.value)}
+                placeholder="0.0"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                className="w-full px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           <button
