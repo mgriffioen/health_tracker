@@ -60,7 +60,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <StatCard
           icon={<Scale size={18} className="text-blue-500" />}
           label="Current Weight"
@@ -73,18 +73,6 @@ export default function Dashboard() {
           value={weightChange !== null ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} ${weightUnit}` : '—'}
           bg="bg-emerald-50"
           valueColor={weightChange !== null ? (weightChange < 0 ? 'text-emerald-600' : 'text-red-500') : undefined}
-        />
-        <StatCard
-          icon={<Flame size={18} className="text-orange-500" />}
-          label="Today's Calories"
-          value={todayCals !== null ? `${todayCals} kcal` : '—'}
-          bg="bg-orange-50"
-        />
-        <StatCard
-          icon={<Calendar size={18} className="text-purple-500" />}
-          label="Avg Daily Cals"
-          value={avgCals !== null ? `${avgCals} kcal` : '—'}
-          bg="bg-purple-50"
         />
       </div>
 
@@ -124,6 +112,21 @@ export default function Dashboard() {
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>
+
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard
+          icon={<Flame size={18} className="text-orange-500" />}
+          label="Today's Calories"
+          value={todayCals !== null ? `${todayCals} kcal` : '—'}
+          bg="bg-orange-50"
+        />
+        <StatCard
+          icon={<Calendar size={18} className="text-purple-500" />}
+          label="Avg Daily Cals"
+          value={avgCals !== null ? `${avgCals} kcal` : '—'}
+          bg="bg-purple-50"
+        />
+      </div>
 
       <ChartCard title="Daily Calorie Intake" empty={calorieData.length === 0}>
         <ResponsiveContainer width="100%" height={220}>
