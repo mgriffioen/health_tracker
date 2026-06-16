@@ -4,6 +4,7 @@ const hf = (name, cal) => ({ name, caloriesPer100g: cal, category: 'Meals', bran
 export const HELLOFRESH_FOODS = [
   hf('Crispy Chicken Milanese', 460),
   hf('Sheet Pan Crunchy Chicken with Ranch Crema', 530),
+  hf('Reuben Hot Dogs with Swiss Cheese', 1300),
   hf('Chicken Gyro Salad w/ Tzatziki Dressing, Heirloom Tomatoes, & Cucumber', 520),
   hf("Palak's South Indian Shrimp Curry w/ Coconut Milk & Basmati Rice", 565),
   hf('Thai Pork Stir-Fry w/ Green Beans & Bell Peppers over Rice', 670),
