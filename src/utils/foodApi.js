@@ -124,6 +124,7 @@ function mapUSDACategory(cat = '') {
 }
 
 export const FOOD_GROUPS = [
+  'Meals',
   'Grains',
   'Fruits & Vegetables',
   'Proteins',

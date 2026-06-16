@@ -1,3 +1,5 @@
+import { searchHelloFresh } from './hellofreshDatabase';
+
 // Curated common foods with reliable calorie data (per 100g unless noted)
 // servings: named portion presets shown as quick-pick buttons in the UI
 export const COMMON_FOODS = [
@@ -164,7 +166,9 @@ export const COMMON_FOODS = [
 export function searchLocal(query) {
   if (!query || query.length < 1) return [];
   const q = query.toLowerCase();
-  return COMMON_FOODS.filter(f => f.name.toLowerCase().includes(q))
+  const common = COMMON_FOODS.filter(f => f.name.toLowerCase().includes(q))
     .slice(0, 6)
     .map(f => ({ ...f, source: 'local' }));
+  const hf = searchHelloFresh(query);
+  return [...common, ...hf];
 }
