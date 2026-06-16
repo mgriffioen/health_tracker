@@ -33,6 +33,7 @@ export default function FoodTracker({ session }) {
   const [selectedFood, setSelectedFood] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [filterDate, setFilterDate] = useState(today());
+  const [pendingDelete, setPendingDelete] = useState(null); // { entry, timeoutId }
   const debounceRef = useRef(null);
   const suggestRef = useRef(null);
   const skipSearchRef = useRef(false);
@@ -139,13 +140,29 @@ export default function FoodTracker({ session }) {
     setSelectedFood(null);
   }
 
-  async function handleDelete(id) {
-    try {
-      await removeFoodEntry(id);
-      setEntries(prev => prev.filter(e => e.id !== id));
-    } catch (err) {
-      console.error(err);
+  function handleDelete(entry) {
+    // Cancel any previous pending delete first
+    if (pendingDelete) {
+      clearTimeout(pendingDelete.timeoutId);
+      removeFoodEntry(pendingDelete.entry.id).catch(console.error);
     }
+    // Optimistically remove from UI
+    setEntries(prev => prev.filter(e => e.id !== entry.id));
+    // Schedule actual delete after 4 seconds
+    const timeoutId = setTimeout(() => {
+      removeFoodEntry(entry.id).catch(console.error);
+      setPendingDelete(null);
+    }, 4000);
+    setPendingDelete({ entry, timeoutId });
+  }
+
+  function handleUndoDelete() {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timeoutId);
+    setEntries(prev => [pendingDelete.entry, ...prev].sort((a, b) =>
+      a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date)
+    ));
+    setPendingDelete(null);
   }
 
   const filtered = entries.filter(e => e.date === filterDate);
@@ -321,18 +338,20 @@ export default function FoodTracker({ session }) {
                       <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">
                         {entry.calories} kcal
                       </div>
-                      <button
-                        onClick={() => handleEdit(entry)}
-                        className="text-slate-300 hover:text-emerald-500 transition-colors"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="text-slate-300 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center gap-3 ml-1">
+                        <button
+                          onClick={() => handleEdit(entry)}
+                          className="text-slate-300 hover:text-emerald-500 transition-colors p-1"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(entry)}
+                          className="text-slate-300 hover:text-red-400 transition-colors p-1"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -341,6 +360,17 @@ export default function FoodTracker({ session }) {
           </div>
         )}
       </div>
+      {pendingDelete && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-slate-800 text-white px-4 py-3 rounded-xl shadow-lg text-sm">
+          <span>Entry deleted</span>
+          <button
+            onClick={handleUndoDelete}
+            className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+          >
+            Undo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
