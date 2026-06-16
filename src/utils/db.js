@@ -41,6 +41,30 @@ export async function removeFoodEntry(id) {
   if (error) throw error;
 }
 
+export async function updateFoodEntry(id, entry) {
+  const { data, error } = await supabase
+    .from('food_entries')
+    .update({
+      name: entry.name,
+      calories: Number(entry.calories),
+      food_group: entry.foodGroup,
+      date: entry.date,
+      time: entry.time,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return {
+    id: data.id,
+    name: data.name,
+    calories: data.calories,
+    foodGroup: data.food_group,
+    date: data.date,
+    time: data.time,
+  };
+}
+
 // Weight entries
 export async function fetchWeightEntries() {
   const { data, error } = await supabase

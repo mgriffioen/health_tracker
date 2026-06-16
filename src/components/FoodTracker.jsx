@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Trash2, Search, Clock } from 'lucide-react';
+import { Plus, Trash2, Search, Clock, Pencil, X } from 'lucide-react';
 import { searchFoods, FOOD_GROUPS } from '../utils/foodApi';
 import { searchLocal } from '../utils/foodDatabase';
-import { fetchFoodEntries, insertFoodEntry, removeFoodEntry } from '../utils/db';
+import { fetchFoodEntries, insertFoodEntry, removeFoodEntry, updateFoodEntry } from '../utils/db';
 
 function today() {
   const d = new Date();
@@ -31,6 +31,7 @@ export default function FoodTracker({ session }) {
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [filterDate, setFilterDate] = useState(today());
   const debounceRef = useRef(null);
   const suggestRef = useRef(null);
@@ -100,14 +101,42 @@ export default function FoodTracker({ session }) {
     e.preventDefault();
     if (!form.name || !form.calories) return;
     try {
-      const saved = await insertFoodEntry(form, session.user.id);
-      setEntries(prev => [saved, ...prev]);
+      if (editingId) {
+        const updated = await updateFoodEntry(editingId, form);
+        setEntries(prev => prev.map(en => en.id === editingId ? updated : en));
+        setEditingId(null);
+      } else {
+        const saved = await insertFoodEntry(form, session.user.id);
+        setEntries(prev => [saved, ...prev]);
+      }
       setForm({ ...EMPTY_FORM, date: form.date });
       setQuery('');
       setSelectedFood(null);
     } catch (err) {
       console.error(err);
     }
+  }
+
+  function handleEdit(entry) {
+    setEditingId(entry.id);
+    setForm({
+      name: entry.name,
+      calories: entry.calories,
+      foodGroup: entry.foodGroup || 'Other',
+      date: entry.date,
+      time: entry.time,
+      servingSize: 100,
+    });
+    setQuery(entry.name);
+    setSelectedFood(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({ ...EMPTY_FORM, date: form.date });
+    setQuery('');
+    setSelectedFood(null);
   }
 
   async function handleDelete(id) {
@@ -131,7 +160,14 @@ export default function FoodTracker({ session }) {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">Log Food</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-800">{editingId ? 'Edit Entry' : 'Log Food'}</h2>
+          {editingId && (
+            <button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <X size={18} />
+            </button>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="relative" ref={suggestRef}>
             <label className="block text-sm font-medium text-slate-600 mb-1">Food Item</label>
@@ -245,7 +281,7 @@ export default function FoodTracker({ session }) {
             disabled={!form.name || !form.calories}
             className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            <Plus size={16} /> Add Food Entry
+            {editingId ? <><Pencil size={15} /> Save Changes</> : <><Plus size={16} /> Add Food Entry</>}
           </button>
         </form>
       </div>
@@ -277,7 +313,7 @@ export default function FoodTracker({ session }) {
                 <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{group}</div>
                 <div className="space-y-1">
                   {items.map(entry => (
-                    <div key={entry.id} className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-lg">
+                    <div key={entry.id} className={`flex items-center gap-2 p-2.5 rounded-lg ${editingId === entry.id ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-slate-50'}`}>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-slate-800 truncate">{entry.name}</div>
                         <div className="text-xs text-slate-400">{entry.time}</div>
@@ -286,8 +322,14 @@ export default function FoodTracker({ session }) {
                         {entry.calories} kcal
                       </div>
                       <button
+                        onClick={() => handleEdit(entry)}
+                        className="text-slate-300 hover:text-emerald-500 transition-colors"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
                         onClick={() => handleDelete(entry.id)}
-                        className="text-slate-300 hover:text-red-400 transition-colors ml-1"
+                        className="text-slate-300 hover:text-red-400 transition-colors"
                       >
                         <Trash2 size={14} />
                       </button>
