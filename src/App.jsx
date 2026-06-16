@@ -7,13 +7,13 @@ import Auth from './components/Auth';
 import { supabase } from './utils/supabase';
 
 const TABS = [
-  { id: 'food', label: 'Food Tracker', icon: Utensils },
   { id: 'weight', label: 'Weight Tracker', icon: Scale },
+  { id: 'food', label: 'Food Tracker', icon: Utensils },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('food');
+  const [activeTab, setActiveTab] = useState('weight');
   const [session, setSession] = useState(undefined);
 
   useEffect(() => {
