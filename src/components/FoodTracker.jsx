@@ -74,10 +74,11 @@ export default function FoodTracker({ session }) {
     setSelectedFood(food);
     setQuery(food.name);
     setShowSuggestions(false);
+    const defaultServing = food.servings?.[0]?.g ?? 100;
     const cals = food.caloriesPer100g
-      ? Math.round((food.caloriesPer100g * form.servingSize) / 100)
+      ? Math.round((food.caloriesPer100g * defaultServing) / 100)
       : '';
-    setForm(f => ({ ...f, name: food.name, calories: cals, foodGroup: food.category || 'Other' }));
+    setForm(f => ({ ...f, name: food.name, calories: cals, servingSize: defaultServing, foodGroup: food.category || 'Other' }));
   }
 
   function handleServingChange(size) {
@@ -187,28 +188,16 @@ export default function FoodTracker({ session }) {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Serving (g)</label>
-              <input
-                type="number"
-                min="1"
-                value={form.servingSize}
-                onChange={e => handleServingChange(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Calories (kcal)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.calories}
-                onChange={e => setForm(f => ({ ...f, calories: e.target.value }))}
-                placeholder="Auto or manual"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-600 mb-1">Calories (kcal)</label>
+            <input
+              type="number"
+              min="0"
+              value={form.calories}
+              onChange={e => setForm(f => ({ ...f, calories: e.target.value }))}
+              placeholder="Auto or manual"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -286,7 +275,7 @@ export default function FoodTracker({ session }) {
                     <div key={entry.id} className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-lg">
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm text-slate-800 truncate">{entry.name}</div>
-                        <div className="text-xs text-slate-400">{entry.time} · {entry.servingSize}g</div>
+                        <div className="text-xs text-slate-400">{entry.time}</div>
                       </div>
                       <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">
                         {entry.calories} kcal
