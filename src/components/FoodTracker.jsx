@@ -34,6 +34,7 @@ export default function FoodTracker({ session }) {
   const [filterDate, setFilterDate] = useState(today());
   const debounceRef = useRef(null);
   const suggestRef = useRef(null);
+  const skipSearchRef = useRef(false);
 
   useEffect(() => {
     fetchFoodEntries()
@@ -52,6 +53,7 @@ export default function FoodTracker({ session }) {
   }, []);
 
   useEffect(() => {
+    if (skipSearchRef.current) { skipSearchRef.current = false; return; }
     if (query.length < 2) { setSuggestions([]); return; }
     const local = searchLocal(query);
     if (local.length) { setSuggestions(local); setShowSuggestions(true); }
@@ -71,8 +73,10 @@ export default function FoodTracker({ session }) {
   }, []);
 
   function selectSuggestion(food) {
+    skipSearchRef.current = true;
     setSelectedFood(food);
     setQuery(food.name);
+    setSuggestions([]);
     setShowSuggestions(false);
     const defaultServing = food.servings?.[0]?.g ?? 100;
     const cals = food.caloriesPer100g
@@ -140,6 +144,7 @@ export default function FoodTracker({ session }) {
                 onFocus={() => suggestions.length && setShowSuggestions(true)}
                 placeholder="Search food or enter manually…"
                 className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                style={{ touchAction: 'manipulation' }}
               />
               {loading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />

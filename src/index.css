@@ -20,6 +20,11 @@ input, select, textarea {
   font-size: 16px !important;
 }
 
+/* Prevent double-tap zoom on buttons and interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
 /* Safe area for notched phones (add padding at bottom for home indicator) */
 main {
   padding-bottom: env(safe-area-inset-bottom, 0px);
