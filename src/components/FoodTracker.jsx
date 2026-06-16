@@ -260,7 +260,7 @@ export default function FoodTracker({ session }) {
             type="date"
             value={filterDate}
             onChange={e => setFilterDate(e.target.value)}
-            className="px-2 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-auto"
+            className="px-2 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-[40%]"
           />
         </div>
 
