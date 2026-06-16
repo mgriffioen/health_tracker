@@ -338,20 +338,18 @@ export default function FoodTracker({ session }) {
                       <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">
                         {entry.calories} kcal
                       </div>
-                      <div className="flex items-center gap-3 ml-1">
-                        <button
-                          onClick={() => handleEdit(entry)}
-                          className="text-slate-300 hover:text-emerald-500 transition-colors p-1"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(entry)}
-                          className="text-slate-300 hover:text-red-400 transition-colors p-1"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleEdit(entry)}
+                        className="text-slate-300 hover:text-emerald-500 transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(entry)}
+                        className="text-slate-300 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   ))}
                 </div>
