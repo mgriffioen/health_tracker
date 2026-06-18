@@ -250,6 +250,7 @@ export default function FoodTracker({ session }) {
             <label className="block text-sm font-medium text-slate-600 mb-1">Calories (kcal)</label>
             <input
               type="number"
+              inputMode="decimal"
               min="0"
               value={form.calories}
               onChange={e => setForm(f => ({ ...f, calories: e.target.value }))}

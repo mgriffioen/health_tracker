@@ -68,6 +68,7 @@ export default function WeightTracker({ session }) {
               <label className="block text-sm font-medium text-slate-600 mb-1">Weight (lbs)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.1"
                 min="0"
                 value={weight}
