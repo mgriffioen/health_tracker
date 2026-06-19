@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Clock, Pencil, X } from 'lucide-react';
-import { searchFoods, FOOD_GROUPS } from '../utils/foodApi';
+import { searchFoods } from '../utils/foodApi';
 import { searchLocal } from '../utils/foodDatabase';
 import { fetchFoodEntries, insertFoodEntry, removeFoodEntry, updateFoodEntry } from '../utils/db';
 
@@ -19,7 +19,6 @@ const EMPTY_FORM = {
   name: '',
   calories: '',
   servingSize: 100,
-  foodGroup: 'Other',
 };
 
 export default function FoodTracker({ session }) {
@@ -33,7 +32,7 @@ export default function FoodTracker({ session }) {
   const [selectedFood, setSelectedFood] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [filterDate, setFilterDate] = useState(today());
-  const [pendingDelete, setPendingDelete] = useState(null); // { entry, timeoutId }
+  const [pendingDelete, setPendingDelete] = useState(null);
   const debounceRef = useRef(null);
   const suggestRef = useRef(null);
   const skipSearchRef = useRef(false);
@@ -84,7 +83,7 @@ export default function FoodTracker({ session }) {
     const cals = food.caloriesPer100g
       ? Math.round((food.caloriesPer100g * defaultServing) / 100)
       : '';
-    setForm(f => ({ ...f, name: food.name, calories: cals, servingSize: defaultServing, foodGroup: food.category || 'Other' }));
+    setForm(f => ({ ...f, name: food.name, calories: cals, servingSize: defaultServing }));
   }
 
   function handleServingChange(size) {
@@ -123,7 +122,6 @@ export default function FoodTracker({ session }) {
     setForm({
       name: entry.name,
       calories: entry.calories,
-      foodGroup: entry.foodGroup || 'Other',
       date: entry.date,
       time: entry.time,
       servingSize: 100,
@@ -141,14 +139,11 @@ export default function FoodTracker({ session }) {
   }
 
   function handleDelete(entry) {
-    // Cancel any previous pending delete first
     if (pendingDelete) {
       clearTimeout(pendingDelete.timeoutId);
       removeFoodEntry(pendingDelete.entry.id).catch(console.error);
     }
-    // Optimistically remove from UI
     setEntries(prev => prev.filter(e => e.id !== entry.id));
-    // Schedule actual delete after 4 seconds
     const timeoutId = setTimeout(() => {
       removeFoodEntry(entry.id).catch(console.error);
       setPendingDelete(null);
@@ -167,12 +162,6 @@ export default function FoodTracker({ session }) {
 
   const filtered = entries.filter(e => e.date === filterDate);
   const totalCals = filtered.reduce((sum, e) => sum + Number(e.calories || 0), 0);
-  const grouped = filtered.reduce((acc, e) => {
-    const g = e.foodGroup || 'Other';
-    if (!acc[g]) acc[g] = [];
-    acc[g].push(e);
-    return acc;
-  }, {});
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -259,17 +248,6 @@ export default function FoodTracker({ session }) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-600 mb-1">Food Group</label>
-            <select
-              value={form.foodGroup}
-              onChange={e => setForm(f => ({ ...f, foodGroup: e.target.value }))}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              {FOOD_GROUPS.map(g => <option key={g}>{g}</option>)}
-            </select>
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-600 mb-1">Time</label>
@@ -325,35 +303,28 @@ export default function FoodTracker({ session }) {
         ) : filtered.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-6">No entries for this day.</p>
         ) : (
-          <div className="space-y-4">
-            {Object.entries(grouped).map(([group, items]) => (
-              <div key={group}>
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{group}</div>
-                <div className="space-y-1">
-                  {items.map(entry => (
-                    <div key={entry.id} className={`flex items-center gap-2 p-2.5 rounded-lg ${editingId === entry.id ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-slate-50'}`}>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-slate-800 truncate">{entry.name}</div>
-                        <div className="text-xs text-slate-400">{entry.time}</div>
-                      </div>
-                      <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">
-                        {entry.calories} kcal
-                      </div>
-                      <button
-                        onClick={() => handleEdit(entry)}
-                        className="text-slate-300 hover:text-emerald-500 transition-colors"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(entry)}
-                        className="text-slate-300 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
+          <div className="space-y-1">
+            {filtered.map(entry => (
+              <div key={entry.id} className={`flex items-center gap-2 p-2.5 rounded-lg ${editingId === entry.id ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'bg-slate-50'}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm text-slate-800 truncate">{entry.name}</div>
+                  <div className="text-xs text-slate-400">{entry.time}</div>
                 </div>
+                <div className="text-sm font-semibold text-emerald-600 whitespace-nowrap">
+                  {entry.calories} kcal
+                </div>
+                <button
+                  onClick={() => handleEdit(entry)}
+                  className="text-slate-300 hover:text-emerald-500 transition-colors"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => handleDelete(entry)}
+                  className="text-slate-300 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             ))}
           </div>
