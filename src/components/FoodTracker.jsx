@@ -175,7 +175,7 @@ export default function FoodTracker({ session }) {
   }, {});
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
+    <div className="max-w-2xl mx-auto p-4 space-y-6">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-slate-800">{editingId ? 'Edit Entry' : 'Log Food'}</h2>
