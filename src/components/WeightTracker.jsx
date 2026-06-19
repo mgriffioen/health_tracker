@@ -71,8 +71,12 @@ export default function WeightTracker({ session }) {
                 inputMode="decimal"
                 step="0.1"
                 min="0"
+                max="999.9"
                 value={weight}
-                onChange={e => setWeight(e.target.value)}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '' || /^\d{0,3}(\.\d{0,1})?$/.test(val)) setWeight(val);
+                }}
                 placeholder="0.0"
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
