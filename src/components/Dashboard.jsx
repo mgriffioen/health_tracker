@@ -78,7 +78,7 @@ export default function Dashboard() {
 
       <ChartCard title="Weight Over Time" empty={weightData.length < 2}>
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={weightData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+          <LineChart data={weightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
             <YAxis
@@ -87,7 +87,7 @@ export default function Dashboard() {
               tickLine={false}
               axisLine={false}
               unit={` ${weightUnit}`}
-              width={55}
+              width={68}
             />
             <Tooltip
               contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
