@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Utensils, Scale, LayoutDashboard, LogOut } from 'lucide-react';
+import { Utensils, Scale, LayoutDashboard, LogOut, KeyRound, X } from 'lucide-react';
 import FoodTracker from './components/FoodTracker';
 import WeightTracker from './components/WeightTracker';
 import Dashboard from './components/Dashboard';
@@ -12,9 +12,81 @@ const TABS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
 ];
 
+function SetPasswordModal({ onClose }) {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (password !== confirm) { setError('Passwords do not match.'); return; }
+    setError('');
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) setError(error.message);
+    else setSuccess(true);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-slate-800">Set Password</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+        </div>
+        {success ? (
+          <div className="space-y-4">
+            <p className="text-sm text-emerald-600">Password set! You can now sign in with your email and password.</p>
+            <button onClick={onClose} className="w-full py-2.5 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-600 transition-colors">Done</button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">New Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                minLength={6}
+                placeholder="••••••••"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">Confirm Password</label>
+              <input
+                type="password"
+                value={confirm}
+                onChange={e => setConfirm(e.target.value)}
+                required
+                minLength={6}
+                placeholder="••••••••"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+            </div>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading || !password || !confirm}
+              className="w-full py-2.5 bg-emerald-500 text-white rounded-lg font-medium text-sm hover:bg-emerald-600 disabled:opacity-40 transition-colors"
+            >
+              {loading ? 'Saving…' : 'Set Password'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('weight');
   const [session, setSession] = useState(undefined);
+  const [showSetPassword, setShowSetPassword] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -40,13 +112,22 @@ export default function App() {
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex items-center h-14">
             <span className="font-bold text-slate-800 text-base mr-auto">Health Tracker</span>
-            <button
-              onClick={() => supabase.auth.signOut()}
-              className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-sm transition-colors"
-            >
-              <LogOut size={15} />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowSetPassword(true)}
+                className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-sm transition-colors"
+              >
+                <KeyRound size={15} />
+                <span className="hidden sm:inline">Set Password</span>
+              </button>
+              <button
+                onClick={() => supabase.auth.signOut()}
+                className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 text-sm transition-colors"
+              >
+                <LogOut size={15} />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            </div>
           </div>
           <nav className="flex gap-1 -mb-px overflow-x-auto">
             {TABS.map(({ id, label, icon: Icon }) => (
@@ -68,6 +149,7 @@ export default function App() {
         </div>
       </header>
 
+      {showSetPassword && <SetPasswordModal onClose={() => setShowSetPassword(false)} />}
       <main className="flex-1 py-4">
         {activeTab === 'food' && <FoodTracker session={session} />}
         {activeTab === 'weight' && <WeightTracker session={session} />}
