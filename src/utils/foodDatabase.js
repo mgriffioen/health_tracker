@@ -4,6 +4,7 @@ import { searchHelloFresh } from './hellofreshDatabase';
 // servings: named portion presets shown as quick-pick buttons in the UI
 export const COMMON_FOODS = [
   // Proteins
+  { name: 'Chicken and Dumplings', caloriesPer100g: 118, category: 'Meals', servings: [{ label: '1 cup', g: 245 }, { label: '1.5 cups', g: 368 }] },
   { name: 'Birthday Cake', caloriesPer100g: 371, category: 'Sweets', servings: [{ label: '1 slice', g: 80 }, { label: '2 slices', g: 160 }] },
   { name: 'Designer Whey Gourmet Chocolate', caloriesPer100g: 355, category: 'Proteins', brand: 'Designer Wellness', servings: [{ label: '2 scoops', g: 31 }, { label: '4 scoops', g: 62 }] },
   { name: 'Chicken Breast (cooked)', caloriesPer100g: 165, category: 'Proteins', servings: [{ label: '3 oz', g: 85 }, { label: '4 oz', g: 113 }, { label: '6 oz', g: 170 }] },
