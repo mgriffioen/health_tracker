@@ -57,12 +57,23 @@ export default function FoodTracker({ session }) {
   useEffect(() => {
     if (skipSearchRef.current) { skipSearchRef.current = false; return; }
     if (query.length < 2) { setSuggestions([]); return; }
+    const q = query.toLowerCase();
+    const seen = new Set();
+    const history = entries
+      .filter(e => e.name.toLowerCase().includes(q))
+      .reduce((acc, e) => {
+        const key = `${e.name}|${e.calories}`;
+        if (!seen.has(key)) { seen.add(key); acc.push({ name: e.name, calories: e.calories, foodGroup: e.foodGroup, source: 'history' }); }
+        return acc;
+      }, [])
+      .slice(0, 4);
     const local = searchLocal(query);
-    if (local.length) { setSuggestions(local); setShowSuggestions(true); }
+    const combined = [...history, ...local.filter(l => !seen.has(`${l.name}`))];
+    if (combined.length) { setSuggestions(combined); setShowSuggestions(true); }
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => search(query), 500);
     return () => clearTimeout(debounceRef.current);
-  }, [query, search]);
+  }, [query, search, entries]);
 
   useEffect(() => {
     function handleClick(e) {
@@ -76,15 +87,19 @@ export default function FoodTracker({ session }) {
 
   function selectSuggestion(food) {
     skipSearchRef.current = true;
-    setSelectedFood(food);
+    setSelectedFood(food.source === 'history' ? null : food);
     setQuery(food.name);
     setSuggestions([]);
     setShowSuggestions(false);
-    const defaultServing = food.servings?.[0]?.g ?? 100;
-    const cals = food.caloriesPer100g
-      ? Math.round((food.caloriesPer100g * defaultServing) / 100)
-      : '';
-    setForm(f => ({ ...f, name: food.name, calories: cals, servingSize: defaultServing, foodGroup: food.category || 'Other' }));
+    if (food.source === 'history') {
+      setForm(f => ({ ...f, name: food.name, calories: food.calories, servingSize: 100, foodGroup: food.foodGroup || 'Other' }));
+    } else {
+      const defaultServing = food.servings?.[0]?.g ?? 100;
+      const cals = food.caloriesPer100g
+        ? Math.round((food.caloriesPer100g * defaultServing) / 100)
+        : '';
+      setForm(f => ({ ...f, name: food.name, calories: cals, servingSize: defaultServing, foodGroup: food.category || 'Other' }));
+    }
   }
 
   function handleServingChange(size) {
@@ -213,10 +228,13 @@ export default function FoodTracker({ session }) {
                   >
                     <div className="flex items-center gap-1.5">
                       <span className="font-medium text-slate-800">{s.name}</span>
+                      {s.source === 'history' && <span className="text-[10px] bg-slate-100 text-slate-500 px-1 rounded">recent</span>}
                       {s.source === 'local' && <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1 rounded">common</span>}
                     </div>
                     <div className="text-slate-400 text-xs">
-                      {s.brand && `${s.brand} · `}{s.caloriesPer100g} kcal/100g · {s.category}
+                      {s.source === 'history'
+                        ? `${s.calories} kcal`
+                        : `${s.brand ? s.brand + ' · ' : ''}${s.caloriesPer100g} kcal/100g · ${s.category}`}
                     </div>
                   </li>
                 ))}
