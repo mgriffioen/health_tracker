@@ -83,7 +83,18 @@ function SetPasswordModal({ onClose }) {
   );
 }
 
-const DAY_THEMES = ['rose', 'violet', 'sky', 'teal', 'amber', 'indigo', 'purple'];
+const THEMES = [
+  'rose', 'orange', 'amber', 'lime', 'emerald', 'teal', 'cyan',
+  'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'red',
+];
+
+function getDailyTheme() {
+  const d = new Date();
+  const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  let hash = 0;
+  for (const ch of key) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return THEMES[hash % THEMES.length];
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('weight');
@@ -91,11 +102,7 @@ export default function App() {
   const [showSetPassword, setShowSetPassword] = useState(false);
 
   useEffect(() => {
-    const theme = DAY_THEMES[new Date().getDay()];
-    document.documentElement.setAttribute('data-theme', theme);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',
-      getComputedStyle(document.documentElement).getPropertyValue('--color-emerald-500').trim() || '#10b981'
-    );
+    document.documentElement.setAttribute('data-theme', getDailyTheme());
   }, []);
 
   useEffect(() => {
