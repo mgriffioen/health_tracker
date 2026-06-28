@@ -39,3 +39,68 @@ button, a, input, select, textarea, [role="button"] {
 main {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Daily color themes — override emerald CSS variables per day */
+/* Sunday: Rose */
+[data-theme="rose"] {
+  --color-emerald-50: oklch(96.9% 0.015 12.422);
+  --color-emerald-100: oklch(94.1% 0.03 12.58);
+  --color-emerald-200: oklch(89.2% 0.058 10.001);
+  --color-emerald-400: oklch(71.2% 0.194 13.428);
+  --color-emerald-500: oklch(64.5% 0.246 16.439);
+  --color-emerald-600: oklch(58.6% 0.232 17.124);
+}
+/* Monday: Violet */
+[data-theme="violet"] {
+  --color-emerald-50: oklch(97.7% 0.014 308.299);
+  --color-emerald-100: oklch(94.3% 0.029 294.588);
+  --color-emerald-200: oklch(89.4% 0.058 293.283);
+  --color-emerald-400: oklch(70.2% 0.183 293.541);
+  --color-emerald-500: oklch(62% 0.214 292.536);
+  --color-emerald-600: oklch(54.1% 0.208 294.649);
+}
+/* Tuesday: Sky */
+[data-theme="sky"] {
+  --color-emerald-50: oklch(97.7% 0.013 236.62);
+  --color-emerald-100: oklch(95.1% 0.026 236.824);
+  --color-emerald-200: oklch(90.2% 0.063 233.687);
+  --color-emerald-400: oklch(74.9% 0.166 225.592);
+  --color-emerald-500: oklch(68.5% 0.169 237.323);
+  --color-emerald-600: oklch(61.2% 0.164 239.419);
+}
+/* Wednesday: Teal */
+[data-theme="teal"] {
+  --color-emerald-50: oklch(98.4% 0.014 180.72);
+  --color-emerald-100: oklch(96.3% 0.042 182.233);
+  --color-emerald-200: oklch(92.5% 0.084 180.722);
+  --color-emerald-400: oklch(77.7% 0.152 181.912);
+  --color-emerald-500: oklch(70.4% 0.14 182.503);
+  --color-emerald-600: oklch(60% 0.118 184.704);
+}
+/* Thursday: Amber */
+[data-theme="amber"] {
+  --color-emerald-50: oklch(98.7% 0.022 95.277);
+  --color-emerald-100: oklch(96.2% 0.059 95.617);
+  --color-emerald-200: oklch(92.4% 0.12 95.746);
+  --color-emerald-400: oklch(82.8% 0.189 84.429);
+  --color-emerald-500: oklch(76.9% 0.188 70.08);
+  --color-emerald-600: oklch(66.6% 0.179 58.318);
+}
+/* Friday: Indigo */
+[data-theme="indigo"] {
+  --color-emerald-50: oklch(97.8% 0.014 283.14);
+  --color-emerald-100: oklch(95.4% 0.038 282.9);
+  --color-emerald-200: oklch(90.5% 0.074 281.288);
+  --color-emerald-400: oklch(67.3% 0.182 276.935);
+  --color-emerald-500: oklch(58.5% 0.233 277.117);
+  --color-emerald-600: oklch(51.1% 0.262 276.966);
+}
+/* Saturday: Purple */
+[data-theme="purple"] {
+  --color-emerald-50: oklch(97.7% 0.014 308.299);
+  --color-emerald-100: oklch(94.6% 0.033 307.061);
+  --color-emerald-200: oklch(90.2% 0.063 306.703);
+  --color-emerald-400: oklch(71.4% 0.203 304.785);
+  --color-emerald-500: oklch(62.7% 0.265 303.9);
+  --color-emerald-600: oklch(55.8% 0.288 302.321);
+}

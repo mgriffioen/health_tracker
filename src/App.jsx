@@ -83,10 +83,20 @@ function SetPasswordModal({ onClose }) {
   );
 }
 
+const DAY_THEMES = ['rose', 'violet', 'sky', 'teal', 'amber', 'indigo', 'purple'];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('weight');
   const [session, setSession] = useState(undefined);
   const [showSetPassword, setShowSetPassword] = useState(false);
+
+  useEffect(() => {
+    const theme = DAY_THEMES[new Date().getDay()];
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',
+      getComputedStyle(document.documentElement).getPropertyValue('--color-emerald-500').trim() || '#10b981'
+    );
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
