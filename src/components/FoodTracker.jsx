@@ -343,7 +343,7 @@ export default function FoodTracker({ session }) {
         ) : filtered.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-6">No entries for this day.</p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto" style={{ maxHeight: filtered.length > 14 ? '560px' : 'none' }}>
             {Object.entries(grouped).map(([group, items]) => (
               <div key={group}>
                 <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{group}</div>
