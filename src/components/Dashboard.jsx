@@ -146,7 +146,7 @@ export default function Dashboard() {
         {calorieData.length === 0 ? (
           <p className="text-slate-400 text-sm text-center py-4">No food entries yet.</p>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1 overflow-y-auto" style={{ maxHeight: calorieData.length > 14 ? '560px' : 'none' }}>
             {[...calorieData].reverse().map(d => (
               <div key={d.date} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                 <span className="text-sm text-slate-600">{d.label}</span>
