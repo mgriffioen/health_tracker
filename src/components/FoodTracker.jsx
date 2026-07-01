@@ -37,6 +37,7 @@ export default function FoodTracker({ session }) {
   const debounceRef = useRef(null);
   const suggestRef = useRef(null);
   const skipSearchRef = useRef(false);
+  const historyRef = useRef([]);
 
   useEffect(() => {
     fetchFoodEntries()
@@ -49,7 +50,7 @@ export default function FoodTracker({ session }) {
     if (q.length < 2) { setSuggestions([]); setLoading(false); return; }
     setLoading(true);
     const results = await searchFoods(q);
-    setSuggestions(results);
+    setSuggestions([...historyRef.current, ...results.filter(r => !historyRef.current.some(h => h.name === r.name))]);
     setLoading(false);
     setShowSuggestions(true);
   }, []);
@@ -68,6 +69,7 @@ export default function FoodTracker({ session }) {
       }, [])
       .slice(0, 4);
     const local = searchLocal(query);
+    historyRef.current = history;
     const combined = [...history, ...local.filter(l => !seen.has(`${l.name}`))];
     if (combined.length) { setSuggestions(combined); setShowSuggestions(true); }
     clearTimeout(debounceRef.current);
