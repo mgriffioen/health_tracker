@@ -334,14 +334,14 @@ export default function FoodTracker({ session }) {
         </form>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-1.5">
         {recentDays.map(({ dateStr, dayLabel, dateLabel, cals }) => {
           const isActive = filterDate === dateStr;
           return (
             <button
               key={dateStr}
               onClick={() => setFilterDate(dateStr)}
-              className={`flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-xl border text-center transition-colors ${
+              className={`flex-1 min-w-0 flex flex-col items-center px-1 py-2 rounded-xl border text-center transition-colors ${
                 isActive
                   ? 'bg-emerald-500 border-emerald-500 text-white'
                   : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-400'
