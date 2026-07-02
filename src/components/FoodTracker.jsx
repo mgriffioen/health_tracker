@@ -182,7 +182,7 @@ export default function FoodTracker({ session }) {
     setPendingDelete(null);
   }
 
-  const recentDays = Array.from({ length: 8 }, (_, i) => {
+  const recentDays = Array.from({ length: 4 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -190,7 +190,7 @@ export default function FoodTracker({ session }) {
     const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const cals = entries.filter(e => e.date === dateStr).reduce((sum, e) => sum + Number(e.calories || 0), 0);
     return { dateStr, dayLabel, dateLabel, cals };
-  });
+  }).reverse();
 
   const filtered = entries.filter(e => e.date === filterDate);
   const totalCals = filtered.reduce((sum, e) => sum + Number(e.calories || 0), 0);
