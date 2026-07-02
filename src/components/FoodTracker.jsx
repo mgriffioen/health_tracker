@@ -182,6 +182,16 @@ export default function FoodTracker({ session }) {
     setPendingDelete(null);
   }
 
+  const recentDays = Array.from({ length: 8 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const cals = entries.filter(e => e.date === dateStr).reduce((sum, e) => sum + Number(e.calories || 0), 0);
+    return { dateStr, dayLabel, dateLabel, cals };
+  });
+
   const filtered = entries.filter(e => e.date === filterDate);
   const totalCals = filtered.reduce((sum, e) => sum + Number(e.calories || 0), 0);
   const grouped = filtered.reduce((acc, e) => {
@@ -322,6 +332,29 @@ export default function FoodTracker({ session }) {
             {editingId ? <><Pencil size={15} /> Save Changes</> : <><Plus size={16} /> Add Food Entry</>}
           </button>
         </form>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        {recentDays.map(({ dateStr, dayLabel, dateLabel, cals }) => {
+          const isActive = filterDate === dateStr;
+          return (
+            <button
+              key={dateStr}
+              onClick={() => setFilterDate(dateStr)}
+              className={`flex-shrink-0 flex flex-col items-center px-3 py-2 rounded-xl border text-center transition-colors ${
+                isActive
+                  ? 'bg-emerald-500 border-emerald-500 text-white'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-400'
+              }`}
+            >
+              <span className="text-[11px] font-medium opacity-80">{dayLabel}</span>
+              <span className="text-[11px] opacity-70">{dateLabel}</span>
+              <span className={`text-xs font-semibold mt-0.5 ${isActive ? 'text-white' : cals ? 'text-emerald-600' : 'text-slate-300'}`}>
+                {cals ? `${cals}` : '–'}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
