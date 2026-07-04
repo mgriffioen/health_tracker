@@ -77,32 +77,36 @@ export default function Dashboard() {
       </div>
 
       <ChartCard title="Weight Over Time" empty={weightData.length < 2}>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={weightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
-            <YAxis
-              domain={[dataMin => Math.min(190, dataMin), 'auto']}
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              tickLine={false}
-              axisLine={false}
-              unit={` ${weightUnit}`}
-              width={68}
-            />
-            <Tooltip
-              contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
-              formatter={v => [`${v} ${weightUnit}`, 'Weight']}
-            />
-            <Line
-              type="monotone"
-              dataKey="weight"
-              stroke="#3b82f6"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="overflow-x-auto">
+          <div style={{ minWidth: Math.max(weightData.length * 48, 300) }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={weightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
+                <YAxis
+                  domain={[dataMin => Math.min(190, dataMin), 'auto']}
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  unit={` ${weightUnit}`}
+                  width={68}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
+                  formatter={v => [`${v} ${weightUnit}`, 'Weight']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  stroke="#3b82f6"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </ChartCard>
 
       <div className="grid grid-cols-2 gap-3">
@@ -121,24 +125,28 @@ export default function Dashboard() {
       </div>
 
       <ChartCard title="Daily Calorie Intake" empty={calorieData.length === 0}>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={calorieData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
-            <YAxis
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              tickLine={false}
-              axisLine={false}
-              unit=" kcal"
-              width={75}
-            />
-            <Tooltip
-              contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
-              formatter={v => [`${v} kcal`, 'Calories']}
-            />
-            <Bar dataKey="calories" fill="#f97316" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="overflow-x-auto">
+          <div style={{ minWidth: Math.max(calorieData.length * 48, 300) }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={calorieData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  unit=" kcal"
+                  width={75}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
+                  formatter={v => [`${v} kcal`, 'Calories']}
+                />
+                <Bar dataKey="calories" fill="#f97316" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </ChartCard>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
