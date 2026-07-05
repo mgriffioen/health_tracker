@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -19,6 +19,8 @@ function avgWeight(entries) {
 export default function Dashboard() {
   const [foodEntries, setFoodEntries] = useState([]);
   const [weightEntries, setWeightEntries] = useState([]);
+  const weightScrollRef = useRef(null);
+  const calorieScrollRef = useRef(null);
 
   useEffect(() => {
     fetchFoodEntries().then(setFoodEntries).catch(console.error);
@@ -41,6 +43,14 @@ export default function Dashboard() {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, calories]) => ({ date, label: shortDate(date), calories }));
   }, [foodEntries]);
+
+  useEffect(() => {
+    if (weightScrollRef.current) weightScrollRef.current.scrollLeft = weightScrollRef.current.scrollWidth;
+  }, [weightData]);
+
+  useEffect(() => {
+    if (calorieScrollRef.current) calorieScrollRef.current.scrollLeft = calorieScrollRef.current.scrollWidth;
+  }, [calorieData]);
 
   const latestWeight = weightData.at(-1);
   const firstWeight = weightData[0];
@@ -77,7 +87,7 @@ export default function Dashboard() {
       </div>
 
       <ChartCard title="Weight Over Time" empty={weightData.length < 2}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" ref={weightScrollRef}>
           <div style={{ minWidth: Math.max(weightData.length * 48, 300) }}>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={weightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
@@ -125,7 +135,7 @@ export default function Dashboard() {
       </div>
 
       <ChartCard title="Daily Calorie Intake" empty={calorieData.length === 0}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" ref={calorieScrollRef}>
           <div style={{ minWidth: Math.max(calorieData.length * 48, 300) }}>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={calorieData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
