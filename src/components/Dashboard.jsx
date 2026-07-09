@@ -4,7 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { fetchFoodEntries, fetchWeightEntries } from '../utils/db';
-import { TrendingDown, Flame, Scale, Calendar } from 'lucide-react';
+import { TrendingDown, Flame, Scale, Calendar, Maximize2, X } from 'lucide-react';
 
 function shortDate(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
@@ -67,6 +67,7 @@ export default function Dashboard() {
 
   const weightUnit = latestWeight?.unit || 'lbs';
   const avgW = avgWeight(weightEntries);
+  const [weightFullscreen, setWeightFullscreen] = useState(false);
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -86,7 +87,11 @@ export default function Dashboard() {
         />
       </div>
 
-      <ChartCard title="Weight Over Time" empty={weightData.length < 2}>
+      <ChartCard
+        title="Weight Over Time"
+        empty={weightData.length < 2}
+        action={<button onClick={() => setWeightFullscreen(true)} className="text-slate-400 hover:text-slate-600 transition-colors"><Maximize2 size={15} /></button>}
+      >
         <div className="overflow-x-auto" ref={weightScrollRef}>
           <div style={{ minWidth: Math.max(weightData.length * 48, 300) }}>
             <ResponsiveContainer width="100%" height={220}>
@@ -118,6 +123,55 @@ export default function Dashboard() {
           </div>
         </div>
       </ChartCard>
+
+      {weightFullscreen && (
+        <div className="fixed inset-0 z-50 bg-white flex items-center justify-center">
+          <div style={{
+            transform: 'rotate(90deg)',
+            transformOrigin: 'center center',
+            width: '100vh',
+            height: '100vw',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '16px',
+          }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-base font-semibold text-slate-800">Weight Over Time</span>
+              <button onClick={() => setWeightFullscreen(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
+                  <YAxis
+                    domain={[dataMin => Math.min(190, dataMin), 'auto']}
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                    tickLine={false}
+                    axisLine={false}
+                    unit={` ${weightUnit}`}
+                    width={68}
+                  />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
+                    formatter={v => [`${v} ${weightUnit}`, 'Weight']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="weight"
+                    stroke="#3b82f6"
+                    strokeWidth={2.5}
+                    dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <StatCard
@@ -187,10 +241,13 @@ function StatCard({ icon, label, value, bg, valueColor = 'text-slate-800' }) {
   );
 }
 
-function ChartCard({ title, children, empty }) {
+function ChartCard({ title, children, empty, action }) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-      <h3 className="text-base font-semibold text-slate-800 mb-4">{title}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+        {action}
+      </div>
       {empty ? (
         <p className="text-slate-400 text-sm text-center py-10">Not enough data yet.</p>
       ) : children}
