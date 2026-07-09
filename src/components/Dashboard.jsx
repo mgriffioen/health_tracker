@@ -125,50 +125,41 @@ export default function Dashboard() {
       </ChartCard>
 
       {weightFullscreen && (
-        <div className="fixed inset-0 z-50 bg-white flex items-center justify-center">
-          <div style={{
-            transform: 'rotate(90deg)',
-            transformOrigin: 'center center',
-            width: '100vh',
-            height: '100vw',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '16px',
-          }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-base font-semibold text-slate-800">Weight Over Time</span>
-              <button onClick={() => setWeightFullscreen(false)} className="text-slate-400 hover:text-slate-600">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="flex-1">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
-                  <YAxis
-                    domain={[dataMin => Math.min(190, dataMin), 'auto']}
-                    tick={{ fontSize: 11, fill: '#94a3b8' }}
-                    tickLine={false}
-                    axisLine={false}
-                    unit={` ${weightUnit}`}
-                    width={68}
-                  />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
-                    formatter={v => [`${v} ${weightUnit}`, 'Weight']}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="weight"
-                    stroke="#3b82f6"
-                    strokeWidth={2.5}
-                    dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+        <div className="fixed inset-0 z-50 bg-white flex flex-col p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-base font-semibold text-slate-800">Weight Over Time</span>
+            <button onClick={() => setWeightFullscreen(false)} className="text-slate-400 hover:text-slate-600">
+              <X size={20} />
+            </button>
+          </div>
+          <p className="text-xs text-slate-400 mb-3">Rotate your phone to landscape for a wider view</p>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={weightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
+                <YAxis
+                  domain={[dataMin => Math.min(190, dataMin), 'auto']}
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  unit={` ${weightUnit}`}
+                  width={68}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 13 }}
+                  formatter={v => [`${v} ${weightUnit}`, 'Weight']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  stroke="#3b82f6"
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
