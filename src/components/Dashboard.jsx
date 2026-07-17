@@ -68,6 +68,22 @@ export default function Dashboard() {
   const weightUnit = latestWeight?.unit || 'lbs';
   const avgW = avgWeight(weightEntries);
   const [weightFullscreen, setWeightFullscreen] = useState(false);
+  const [weightRange, setWeightRange] = useState('month');
+
+  const weightRanges = { week: 7, month: 30, '3month': 90 };
+  const weightRangeLabels = { week: 'Week', month: 'Month', '3month': '3 Mo' };
+
+  const filteredWeightData = useMemo(() => {
+    const days = weightRanges[weightRange];
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    return weightData.filter(e => e.date >= cutoffStr);
+  }, [weightData, weightRange]);
+
+  const rangeWeightChange = filteredWeightData.length >= 2
+    ? filteredWeightData.at(-1).weight - filteredWeightData[0].weight
+    : null;
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -80,22 +96,37 @@ export default function Dashboard() {
         />
         <StatCard
           icon={<TrendingDown size={18} className="text-emerald-500" />}
-          label="Total Change"
-          value={weightChange !== null ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} ${weightUnit}` : '—'}
+          label={`Change (${weightRangeLabels[weightRange]})`}
+          value={rangeWeightChange !== null ? `${rangeWeightChange > 0 ? '+' : ''}${rangeWeightChange.toFixed(1)} ${weightUnit}` : '—'}
           bg="bg-emerald-50"
-          valueColor={weightChange !== null ? (weightChange < 0 ? 'text-emerald-600' : 'text-red-500') : undefined}
+          valueColor={rangeWeightChange !== null ? (rangeWeightChange < 0 ? 'text-emerald-600' : 'text-red-500') : undefined}
         />
       </div>
 
       <ChartCard
         title="Weight Over Time"
-        empty={weightData.length < 2}
-        action={<button onClick={() => setWeightFullscreen(true)} className="text-slate-400 hover:text-slate-600 transition-colors"><Maximize2 size={15} /></button>}
+        empty={filteredWeightData.length < 2}
+        action={
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg overflow-hidden border border-slate-200 text-xs">
+              {Object.keys(weightRanges).map(r => (
+                <button
+                  key={r}
+                  onClick={() => setWeightRange(r)}
+                  className={`px-2 py-1 transition-colors ${weightRange === r ? 'bg-blue-500 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                >
+                  {weightRangeLabels[r]}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setWeightFullscreen(true)} className="text-slate-400 hover:text-slate-600 transition-colors"><Maximize2 size={15} /></button>
+          </div>
+        }
       >
         <div className="overflow-x-auto" ref={weightScrollRef}>
-          <div style={{ minWidth: Math.max(weightData.length * 48, 300) }}>
+          <div style={{ minWidth: Math.max(filteredWeightData.length * 48, 300) }}>
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={weightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
+              <LineChart data={filteredWeightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
                 <YAxis
@@ -135,7 +166,7 @@ export default function Dashboard() {
           <p className="text-xs text-slate-400 mb-3">Rotate your phone to landscape for a wider view</p>
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={weightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
+              <LineChart data={filteredWeightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
                 <YAxis
