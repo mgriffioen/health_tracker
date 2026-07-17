@@ -68,22 +68,37 @@ export default function Dashboard() {
   const weightUnit = latestWeight?.unit || 'lbs';
   const avgW = avgWeight(weightEntries);
   const [weightFullscreen, setWeightFullscreen] = useState(false);
-  const [weightRange, setWeightRange] = useState('month');
+  const [weightGrouping, setWeightGrouping] = useState('day');
 
-  const weightRanges = { week: 7, month: 30, '3month': 90 };
-  const weightRangeLabels = { week: 'Week', month: 'Month', '3month': '3 Mo' };
+  const groupedWeightData = useMemo(() => {
+    if (weightGrouping === 'day') return weightData;
 
-  const filteredWeightData = useMemo(() => {
-    const days = weightRanges[weightRange];
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    const cutoffStr = cutoff.toISOString().slice(0, 10);
-    return weightData.filter(e => e.date >= cutoffStr);
-  }, [weightData, weightRange]);
+    const groups = {};
+    weightData.forEach(e => {
+      const d = new Date(e.date + 'T12:00:00');
+      let key;
+      if (weightGrouping === 'week') {
+        // ISO week start (Monday)
+        const day = d.getDay() || 7;
+        const monday = new Date(d);
+        monday.setDate(d.getDate() - day + 1);
+        key = monday.toISOString().slice(0, 10);
+      } else {
+        key = e.date.slice(0, 7); // YYYY-MM
+      }
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e.weight);
+    });
 
-  const rangeWeightChange = filteredWeightData.length >= 2
-    ? filteredWeightData.at(-1).weight - filteredWeightData[0].weight
-    : null;
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)).map(([key, weights]) => {
+      const avg = weights.reduce((s, w) => s + w, 0) / weights.length;
+      const d = new Date(key + (weightGrouping === 'week' ? 'T12:00:00' : '-01T12:00:00'));
+      const label = weightGrouping === 'week'
+        ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      return { date: key, label, weight: parseFloat(avg.toFixed(1)) };
+    });
+  }, [weightData, weightGrouping]);
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -96,26 +111,26 @@ export default function Dashboard() {
         />
         <StatCard
           icon={<TrendingDown size={18} className="text-emerald-500" />}
-          label={`Change (${weightRangeLabels[weightRange]})`}
-          value={rangeWeightChange !== null ? `${rangeWeightChange > 0 ? '+' : ''}${rangeWeightChange.toFixed(1)} ${weightUnit}` : '—'}
+          label="Total Change"
+          value={weightChange !== null ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} ${weightUnit}` : '—'}
           bg="bg-emerald-50"
-          valueColor={rangeWeightChange !== null ? (rangeWeightChange < 0 ? 'text-emerald-600' : 'text-red-500') : undefined}
+          valueColor={weightChange !== null ? (weightChange < 0 ? 'text-emerald-600' : 'text-red-500') : undefined}
         />
       </div>
 
       <ChartCard
         title="Weight Over Time"
-        empty={filteredWeightData.length < 2}
+        empty={groupedWeightData.length < 2}
         action={
           <div className="flex items-center gap-2">
             <div className="flex rounded-lg overflow-hidden border border-slate-200 text-xs">
-              {Object.keys(weightRanges).map(r => (
+              {['day', 'week', 'month'].map(g => (
                 <button
-                  key={r}
-                  onClick={() => setWeightRange(r)}
-                  className={`px-2 py-1 transition-colors ${weightRange === r ? 'bg-blue-500 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                  key={g}
+                  onClick={() => setWeightGrouping(g)}
+                  className={`px-2 py-1 transition-colors capitalize ${weightGrouping === g ? 'bg-blue-500 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
                 >
-                  {weightRangeLabels[r]}
+                  {g.charAt(0).toUpperCase() + g.slice(1)}
                 </button>
               ))}
             </div>
@@ -124,9 +139,9 @@ export default function Dashboard() {
         }
       >
         <div className="overflow-x-auto" ref={weightScrollRef}>
-          <div style={{ minWidth: Math.max(filteredWeightData.length * 48, 300) }}>
+          <div style={{ minWidth: Math.max(groupedWeightData.length * 48, 300) }}>
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={filteredWeightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
+              <LineChart data={groupedWeightData} margin={{ top: 5, right: 10, left: -5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
                 <YAxis
@@ -166,7 +181,7 @@ export default function Dashboard() {
           <p className="text-xs text-slate-400 mb-3">Rotate your phone to landscape for a wider view</p>
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={filteredWeightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
+              <LineChart data={groupedWeightData} margin={{ top: 5, right: 20, left: -5, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} />
                 <YAxis
