@@ -4,6 +4,10 @@ import { searchHelloFresh } from './hellofreshDatabase';
 // servings: named portion presets shown as quick-pick buttons in the UI
 export const COMMON_FOODS = [
   // Proteins
+  { name: 'HF Greek Salad with Spiced Pork Patties', caloriesPer100g: 150, category: 'Meals', brand: 'HelloFresh', servings: [{ label: '1 serving', g: 400 }] },
+  { name: 'HF Mexican-Style Cheesy Chicken Tortas', caloriesPer100g: 175, category: 'Meals', brand: 'HelloFresh', servings: [{ label: '1 serving', g: 400 }] },
+  { name: 'HF Chicken & Crispy Prosciutto Caesar Salad', caloriesPer100g: 140, category: 'Meals', brand: 'HelloFresh', servings: [{ label: '1 serving', g: 400 }] },
+  { name: 'HF Sesame-Soy Pork Bowls', caloriesPer100g: 254, category: 'Meals', brand: 'HelloFresh', servings: [{ label: '1 serving', g: 500 }] },
   { name: 'Costco Chicken Pot Pie', caloriesPer100g: 300, category: 'Meals', brand: 'Costco', servings: [{ label: '1 serving', g: 100 }, { label: '2 servings', g: 200 }] },
   { name: 'Chicken and Dumplings', caloriesPer100g: 118, category: 'Meals', servings: [{ label: '1 cup', g: 245 }, { label: '1.5 cups', g: 368 }] },
   { name: 'Birthday Cake', caloriesPer100g: 371, category: 'Sweets', servings: [{ label: '1 slice', g: 80 }, { label: '2 slices', g: 160 }] },
